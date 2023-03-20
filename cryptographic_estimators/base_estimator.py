@@ -43,36 +43,43 @@ class BaseEstimator(object):
     """
     excluded_algorithms_by_default = []
 
-    def __init__(self, alg, prob, **kwargs):
+    def __init__(self, base_algorithm_subclass, problem_instance, **kwargs):
+        excluded_algorithms = kwargs.get(BASE_EXCLUDED_ALGORITHMS, [])
 
-        excluded_algorithms = kwargs.get(BASE_EXCLUDED_ALGORITHMS, tuple())
-        if excluded_algorithms:
-            if any(not issubclass(Algorithm, alg) for Algorithm in excluded_algorithms):
-                raise TypeError(
-                    f"all excluded algorithms must be a subclass of {alg.__name__}")
-            del kwargs[BASE_EXCLUDED_ALGORITHMS]
+        if (self._are_all_excluded_algorithms_valid_subclasses(base_algorithm_subclass, excluded_algorithms)):
+            raise TypeError(f"All excluded algorithms must be a subclass of {base_algorithm_subclass.__name__}")
 
-        self._algorithms = []
         self.estimates = {}
-
-        self.problem = prob
+        self.problem = problem_instance
+        # self._algorithms = []
+        self._algorithms = self._get_instantiated_algorithms(base_algorithm_subclass, excluded_algorithms)
+        ## Why?
         self._bit_complexities = kwargs.get(BASE_BIT_COMPLEXITIES, 1)
         self.bit_complexities = self._bit_complexities
+        ##
         self.include_tildeo = kwargs.get("include_tildeo", False)
         self.include_quantum = kwargs.get("include_quantum", False)
 
-        included_algorithms = (Algorithm for Algorithm in alg.__subclasses__(
-        ) if Algorithm not in excluded_algorithms)
-
-        for Algorithm in included_algorithms:
+    def _are_all_excluded_algorithms_valid_subclasses(self, algorithm_subclass, excluded_algorithms):
+        return any(not issubclass(Algorithm, algorithm_subclass) for Algorithm in excluded_algorithms)
+    
+    def _get_instantiated_algorithms(self, base_algorithm_subclass, excluded_algorithms, **kwargs):
+        included_algorithms = (Algorithm for Algorithm in base_algorithm_subclass.__subclasses__() if Algorithm not in excluded_algorithms)
+        instantiated_algorithms = []
+        for algorithm_subclass in included_algorithms:
             try:
-                algorithm = Algorithm(prob, **kwargs)
+                algorithm = algorithm_subclass(self.problem, **kwargs)
             except (ValueError, TypeError):
+                # Why? Do we want to notify user that some algorithm could not be instantiated?
                 continue
 
-            self._algorithms.append(algorithm)
-
+            # self._algorithms.append(algorithm)
+            instantiated_algorithms.append(algorithm)
+            # This adds to the BaseEstimator instance a new member with the name of the algorithm
+            # So this makes self.algorithm. accesible
+            # This is weird because we already have a list of algorithms
             setattr(self, algorithm.__module__.split('.')[-1], algorithm)
+        return instantiated_algorithms
 
     @property
     def memory_access(self):
@@ -237,6 +244,7 @@ class BaseEstimator(object):
 
         if not self.estimates:
             self.estimates = dict()
+
         for index, algorithm in enumerate(self.algorithms()):
             name = algorithm.__class__.__name__
             if name not in self.estimates:
