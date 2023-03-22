@@ -98,6 +98,8 @@ class BallCollision(SDAlgorithm):
         """
         Return the optimal parameter $pl$ used in the algorithm optimization
 
+        EXAMPLES::
+
             sage: from cryptographic_estimators.SDEstimator.SDAlgorithms import BallCollision
             sage: from cryptographic_estimators.SDEstimator import SDProblem
             sage: A = BallCollision(SDProblem(n=100,k=50,w=10))

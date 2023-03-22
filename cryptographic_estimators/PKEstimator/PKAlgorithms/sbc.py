@@ -107,9 +107,9 @@ class SBC(PKAlgorithm):
 
         if w1 > w or w < d or n - w < m - d or (d == 1 and w > n - m):
             return inf, inf
-
-        N_w = log2(binomial(n, w)) + log2((q ** d - 1) ** (w - d)) + gauss_binomial(m, d, q) - gauss_binomial(n, d,
-                                                                                                              q)  # number of expected subcodes
+        if w == 57 and d==35 and w1==28:
+            print()
+        N_w = log2(binomial(n, w)) + log2(q) * d * (w - d) + gauss_binomial(m, d, q) - gauss_binomial(n, d, q)  # number of expected subcodes
 
         if N_w < 0:  # continue only if at least one subcode exists in expectation
             return inf, inf
@@ -150,6 +150,7 @@ class SBC(PKAlgorithm):
         if verbose_information is not None:
             verbose_information[VerboseInformation.SBC_ISD] = c_isd
             verbose_information[VerboseInformation.SBC_U] = best_u
+            verbose_information["test"] = N_w
 
         return time, memory
 

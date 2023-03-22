@@ -63,7 +63,7 @@ class PKEstimator(BaseEstimator):
         - ``precision`` -- number of decimal digits output (default: 1)
         - ``truncate`` -- truncate rather than round the output (default: false)
 
-        EXAMPLES:
+        EXAMPLES::
 
             sage: from cryptographic_estimators.PKEstimator import PKEstimator
             sage: A = PKEstimator(n=100,m=50,q=31,ell=2)
@@ -76,6 +76,8 @@ class PKEstimator(BaseEstimator):
             | KMP       | 243.8 |  243.7 |
             | SBC       | 194.3 |  187.9 |
             +-----------+-------+--------+
+
+        TESTS:
 
             sage: from cryptographic_estimators.PKEstimator import PKEstimator
             sage: from cryptographic_estimators.PKEstimator.PKAlgorithms import KMP
