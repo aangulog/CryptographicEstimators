@@ -11,7 +11,9 @@ let
 		autopep8
 		pip
 		pytest
-	]; 
+	    #pytest-rst
+	    #pytest-accept
+	];
 	requireSageTests = false;
   };
 
@@ -25,6 +27,8 @@ let
     autopep8
 	sage
 	pytest
+	#pytest-rst
+	#pytest-accept
   ]);
 in
 { pkgs ? import <nixpkgs> {} }:

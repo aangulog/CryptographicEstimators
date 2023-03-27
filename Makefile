@@ -3,7 +3,7 @@ image_name=estimators-lib:latest
 documentation_path=$(shell pwd)
 
 tools:
-	@sage -python -m pip install setuptools==63.0 wheel==0.38.4 sphinx==5.3.0 furo prettytable scipy pytest
+	@sage -python -m pip install setuptools==63.0 wheel==0.38.4 sphinx==5.3.0 furo prettytable scipy pytest pytest-accept pytest-rst
 
 lib:
 	@python3 setup.py install && sage -python -m pip install .
@@ -70,3 +70,6 @@ add-copyright:
 
 docker-pytest:
 	@docker run --name pytest-estimators -d -it ${image_name} sh && docker exec pytest-estimators sage --python3 -m pytest -vv && sage tests/test_sdfq.sage && sage tests/test_le.sage && sage tests/test_pe.sage && sage tests/test_pk.sage  && make stop-container-and-remove container_name="pytest-estimators"
+
+pytest-doc:
+	@sage --python -m pytest --doctest-modules --accept  docs/source/user_guide.rst
