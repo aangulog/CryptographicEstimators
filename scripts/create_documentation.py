@@ -48,7 +48,9 @@ with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
                          "To use this module, you need to import it:: \n\n"
                          "    from cryptographic_estimators import *\n\n"
                          "This reference shows a minimal example of documentation of the\n"
-                         "TII cryptanalysis library following SageMath guidelines.\n")
+                         "TII cryptanalysis library following SageMath guidelines.\n"
+                         "For further documentation, check out our :doc:`user_guide`\n"
+                         )
 
     ROOT_FOLDER = 'cryptographic_estimators/'
 

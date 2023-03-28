@@ -48,11 +48,13 @@ sage:
 
 ---
 ## Documentation 📝
-To generate the documentation locally you can run `make doc` and then open to `/docs/build/html/index.html` to view it. Or you can also generated the documentation through docker via running `make docker-doc`
+To generate the documentation locally you can run `make doc` and then open to `/docs/build/html/index.html` to view it. Or you can also generate the documentation through docker via running `make docker-doc`.
+The online documentation can be found [here](https://crypto-tii.github.io/cryptographic_estimators/). Additionally, we
+provide a [User Guide](https://crypto-tii.github.io/cryptographic_estimators/user_guide.html) with in depth information.
 
 ---
 ## Contributing 🖊️
-The aim of this project is to be maintained by the community. We want you to help us grow this library, so please feel free to submit your pull request following the [CONTRIBUTING.md](./docs/CONTRIBUTING.md) document. Also if you need any help about how to edit the `input_dictionary.json` visit [this playground](https://github.com/Crypto-TII/cryptographic_estimators_ui).
+The aim of this project is to be maintained by the community. We want you to help us grow this library, so please feel free to submit your pull request following the [CONTRIBUTING.md](./docs/CONTRIBUTING.md) document. Also, if you need any help about how to edit the `input_dictionary.json` visit [this playground](https://github.com/Crypto-TII/cryptographic_estimators_ui).
  
  
 ---
