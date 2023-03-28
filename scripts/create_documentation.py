@@ -96,3 +96,4 @@ with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
 
 copyfile("conf.py", Path(SOURCE_ROOT_FOLDER, "conf.py"))
 copyfile("references.rst", Path(SOURCE_ROOT_FOLDER, "references.rst"))
+copyfile("user_guide.rst", Path(SOURCE_ROOT_FOLDER, "user_guide.rst"))

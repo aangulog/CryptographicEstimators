@@ -29,9 +29,7 @@ author = 'TII'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
 ]
-
 autoclass_content = 'both'
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -65,6 +63,3 @@ html_static_path = ['_static']
 
 
 # -- Extension configuration -------------------------------------------------
-autorun_languages = {}
-autorun_languages['pycon'] = 'sage -python '
-autorun_languages['pycon_prefix_chars'] = 0
