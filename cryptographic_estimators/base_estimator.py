@@ -50,13 +50,15 @@ class BaseEstimator(object):
         excluded_algorithms = kwargs.get(BASE_EXCLUDED_ALGORITHMS, [])
 
         if (self._are_all_excluded_algorithms_valid_subclasses(base_algorithm_subclass, excluded_algorithms)):
-            raise TypeError(f"All excluded algorithms must be a subclass of {base_algorithm_subclass.__name__}")
+            raise TypeError(
+                f"All excluded algorithms must be a subclass of {base_algorithm_subclass.__name__}")
 
         self.estimates = {}
         self.problem = problem_instance
         # self._algorithms = []
-        self._algorithms = self._get_instantiated_algorithms(base_algorithm_subclass, excluded_algorithms)
-        ## Why?
+        self._algorithms = self._get_instantiated_algorithms(
+            base_algorithm_subclass, excluded_algorithms)
+        # Why?
         self._bit_complexities = kwargs.get(BASE_BIT_COMPLEXITIES, 1)
         self.bit_complexities = self._bit_complexities
         ##
@@ -65,9 +67,10 @@ class BaseEstimator(object):
 
     def _are_all_excluded_algorithms_valid_subclasses(self, algorithm_subclass, excluded_algorithms):
         return any(not issubclass(Algorithm, algorithm_subclass) for Algorithm in excluded_algorithms)
-    
+
     def _get_instantiated_algorithms(self, base_algorithm_subclass, excluded_algorithms, **kwargs):
-        included_algorithms = (Algorithm for Algorithm in base_algorithm_subclass.__subclasses__() if Algorithm not in excluded_algorithms)
+        included_algorithms = (Algorithm for Algorithm in base_algorithm_subclass.__subclasses__(
+        ) if Algorithm not in excluded_algorithms)
         instantiated_algorithms = []
         for algorithm_subclass in included_algorithms:
             try:
@@ -350,3 +353,72 @@ class BaseEstimator(object):
         end_time = time.time()
         print(f"Total time: {end_time - start_time}")
         return self.estimates
+
+    def multiprocess_estimate(self, **kwargs):
+        """
+        Returns dictionary describing the complexity of each algorithm and its optimal parameters
+
+        """
+        start_time = time.time()
+        if not self.estimates:
+            self.estimates = dict()
+
+        futurelist = []
+        manager = Manager()
+        shared_estimates = manager.dict()
+
+        with futures.ProcessPoolExecutor() as executor:
+            for index, algorithm in enumerate(self.algorithms()):
+                name = algorithm.__class__.__name__
+                if name not in shared_estimates:
+                    shared_estimates[name] = {}
+
+                print(
+                    f"[{str(index + 1)}/{str(self.nalgorithms())}] - Processing algorithm: '{name}'")
+
+                if BASE_ESTIMATEO not in shared_estimates[name]:
+                    future = executor.submit(
+                        self.shared_add_estimate, algorithm, shared_estimates)
+                    futurelist.append(future)
+
+            # Wait for all futures to complete
+            futures.wait(futurelist)
+            for future in futurelist:
+                result = future.result()
+                if isinstance(result, Exception):
+                    raise result
+
+        self.estimates.update(shared_estimates)
+        end_time = time.time()
+        print(f"Total time: {end_time - start_time}")
+        return self.estimates
+
+    def shared_add_estimate(self, algorithm: BaseAlgorithm, shared_dict: DictProxy):
+        """
+        runs the bit security analysis for the given `algorithm`
+
+        INPUT:
+
+        - ``algorithm`` -- Algorithm to run.
+
+        """
+        name = algorithm.__class__.__name__
+        algorithm.complexity_type = ComplexityType.ESTIMATE.value
+        time_complexity = algorithm.time_complexity()
+        memory_complexity = algorithm.memory_complexity()
+        time_complexity_value = time_complexity if not isinf(
+            time_complexity) else '--'
+        memory_complexity_value = memory_complexity if not isinf(
+            memory_complexity) else '--'
+        verbose_information = algorithm._get_verbose_information(
+        ) if not isinf(time_complexity) else {}
+        optimal_parameters = algorithm.get_optimal_parameters_dict_with_primitive_types()
+
+        shared_dict[name] = {
+            BASE_ESTIMATEO: {
+                BASE_TIME: time_complexity_value,
+                BASE_MEMORY: memory_complexity_value,
+                BASE_PARAMETERS: optimal_parameters
+            },
+            BASE_ADDITIONALO: verbose_information
+        }
