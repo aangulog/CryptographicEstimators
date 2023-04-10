@@ -16,12 +16,13 @@
 # ****************************************************************************
 
 
+import functools
 from typing import Union, Callable
 from .helper import ComplexityType
 from .base_problem import BaseProblem
-import functools
 from math import inf, log2
 from .base_constants import BASE_BIT_COMPLEXITIES, BASE_COMPLEXITY_TYPE, BASE_ESTIMATE, BASE_MEMORY_ACCESS, BASE_TILDEO
+from sage.all import Rational
 
 
 class BaseAlgorithm:
@@ -121,11 +122,11 @@ class BaseAlgorithm:
         if self._complexity_type != new_type:
             self.reset()
             self._complexity_type = new_type
-    
+
     def memory_access_cost(self, mem: float):
         """
         INPUT:
-    
+
         - ```mem`` -- memory consumption of an algorithm
         - ```memory_access`` -- specifies the memory access cost model 
                 (default: 0, choices:
@@ -218,15 +219,15 @@ class BaseAlgorithm:
         raise NotImplementedError
 
     def _compute_tilde_o_time_complexity(self, parameters):
-         """
-         Compute and return the tilde-O time complexity of the algorithm for a given set of parameters
+        """
+        Compute and return the tilde-O time complexity of the algorithm for a given set of parameters
 
-         INPUT:
+        INPUT:
 
-         - ``parameters`` -- dictionary including the parameters
+        - ``parameters`` -- dictionary including the parameters
 
-         """
-         raise NotImplementedError
+        """
+        raise NotImplementedError
 
     def _compute_tilde_o_memory_complexity(self, parameters):
         """
@@ -285,7 +286,7 @@ class BaseAlgorithm:
             tmp_memory = self._compute_memory_complexity(params)
             if self.bit_complexities:
                 tmp_memory = self.problem.to_bitcomplexity_memory(tmp_memory)
-            
+
             tmp_time += self.memory_access_cost(tmp_memory)
 
             if tmp_time < time and tmp_memory <= self.problem.memory_bound:
@@ -316,6 +317,19 @@ class BaseAlgorithm:
 
         """
         return self._optimal_parameters
+
+    def get_optimal_parameters_dict_with_primitive_types(self):
+        """
+        Returns the optimal parameters dictionary with primitive types
+
+        """
+        copy = self._optimal_parameters.copy()
+
+        for key in copy:
+            if isinstance(copy[key], Rational):
+                copy[key] = float(copy[key])
+
+        return copy
 
     def _fix_ranges_for_already_set_parameters(self):
         """
