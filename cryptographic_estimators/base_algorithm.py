@@ -20,8 +20,8 @@ from typing import Union, Callable
 from .helper import ComplexityType
 from .base_problem import BaseProblem
 import functools
-from math import inf
-from .base_constants import *
+from math import inf, log2
+from .base_constants import BASE_BIT_COMPLEXITIES, BASE_COMPLEXITY_TYPE, BASE_ESTIMATE, BASE_MEMORY_ACCESS, BASE_TILDEO
 
 
 class BaseAlgorithm:
@@ -64,7 +64,7 @@ class BaseAlgorithm:
     @property
     def memory_access(self):
         """
-        Returns the attribtue _memory_access
+        Returns the attribute _memory_access
 
         """
         return self._memory_access
@@ -72,7 +72,7 @@ class BaseAlgorithm:
     @memory_access.setter
     def memory_access(self, new_memory_access: Union[int, Callable[[float], float]]):
         """
-        Sets the attribtue _memory_access and resets internal state respectively
+        Sets the attribute _memory_access and resets internal state respectively
 
         INPUT:
 
@@ -96,7 +96,7 @@ class BaseAlgorithm:
     @complexity_type.setter
     def complexity_type(self, input_type: Union[int, str]):
         """
-        Sets the attribtue _complexity_type and resets internal state respectively
+        Sets the attribute _complexity_type and resets internal state respectively
 
         INPUT:
 
@@ -121,6 +121,32 @@ class BaseAlgorithm:
         if self._complexity_type != new_type:
             self.reset()
             self._complexity_type = new_type
+    
+    def memory_access_cost(self, mem: float):
+        """
+        INPUT:
+    
+        - ```mem`` -- memory consumption of an algorithm
+        - ```memory_access`` -- specifies the memory access cost model 
+                (default: 0, choices:
+                0 - constant,
+                1 - logarithmic,
+                2 - square-root,
+                3 - cube-root or deploy custom function which takes as input the
+                logarithm of the total memory usage)
+
+        """
+        if self._memory_access == 0:
+            return 0
+        elif self._memory_access == 1:
+            return log2(mem)
+        elif self._memory_access == 2:
+            return mem / 2
+        elif self._memory_access == 3:
+            return mem / 3
+        elif callable(self._memory_access):
+            return self._memory_access(mem)
+        return 0
 
     def _get_verbose_information(self):
         """
@@ -191,6 +217,31 @@ class BaseAlgorithm:
         """
         raise NotImplementedError
 
+    def _compute_tilde_o_time_complexity(self, parameters):
+         """
+         Compute and return the tilde-O time complexity of the algorithm for a given set of parameters
+
+         INPUT:
+
+         - ``parameters`` -- dictionary including the parameters
+
+         """
+         raise NotImplementedError
+
+    def _compute_tilde_o_memory_complexity(self, parameters):
+        """
+        Compute and return the tilde-O memory complexity of the algorithm for a given set of parameters
+
+        INPUT:
+
+        - ``parameters`` -- dictionary including the parameters
+
+        """
+        raise NotImplementedError
+
+    def _find_optimal_tilde_o_parameters(self):
+        raise NotImplementedError
+
     def _get_optimal_parameter_methods_(self):
         """
         Return a list of methods decorated with @optimal_parameter ordered by linenumber of appearance
@@ -234,6 +285,8 @@ class BaseAlgorithm:
             tmp_memory = self._compute_memory_complexity(params)
             if self.bit_complexities:
                 tmp_memory = self.problem.to_bitcomplexity_memory(tmp_memory)
+            
+            tmp_time += self.memory_access_cost(tmp_memory)
 
             if tmp_time < time and tmp_memory <= self.problem.memory_bound:
                 time, memory = tmp_time, tmp_memory
@@ -264,11 +317,10 @@ class BaseAlgorithm:
         """
         return self._optimal_parameters
 
-    def _fix_ranges_for_already_set_parmeters(self):
+    def _fix_ranges_for_already_set_parameters(self):
         """
-        returns a new parameter rangers dictionary, which fixes already 
+        Returns a new parameter rangers dictionary, which fixes already
         optimal paramters.
-
         """
         parameters = self._optimal_parameters
         ranges = self._parameter_ranges
@@ -276,18 +328,25 @@ class BaseAlgorithm:
                       for i in ranges}
         return new_ranges
 
+    def _are_parameters_invalid(self, parameters: dict):
+        """
+        Specifies constraints on the parameters
+        """
+        return False
+
     def _valid_choices(self):
         """
         Generator which yields on each call a new set of valid parameters based on the `_parameter_ranges` and already
         set parameters in `_optimal_parameters`
 
         """
-        new_ranges = self._fix_ranges_for_already_set_parmeters()
+        new_ranges = self._fix_ranges_for_already_set_parameters()
         indices = {i: new_ranges[i]["min"] for i in new_ranges}
         keys = [i for i in indices]
         stop = False
         while not stop:
-            yield indices
+            if not self._are_parameters_invalid(indices):
+                yield indices
             indices[next(iter(indices))] += 1
             for i in range(len(keys)):
                 if indices[keys[i]] > new_ranges[keys[i]]["max"]:
@@ -359,24 +418,29 @@ class BaseAlgorithm:
                 return self._time_complexity
             else:
                 params = self.optimal_parameters()
+                if not self._do_valid_parameters_in_current_ranges_exist():
+                    self._time_complexity = inf
+                    self._memory_complexity = inf
+                    return inf
         else:
             params = self.__set_dict(**kwargs)
 
-        if not self._do_valid_parameters_in_current_ranges_exist():
-            self._time_complexity = inf
-            self._memory_complexity = inf
-            return inf
-
         if self._complexity_type == ComplexityType.ESTIMATE.value:
-            self._time_complexity = self._compute_time_complexity(params)
+            temp_time_complexity = self._compute_time_complexity(params)
             if self.bit_complexities:
-                self._time_complexity = self.problem.to_bitcomplexity_time(
-                    self._time_complexity)
+                temp_time_complexity = self.problem.to_bitcomplexity_time(
+                    temp_time_complexity)
+
+            if self._memory_access != 0:
+                temp_time_complexity += self.memory_access_cost(
+                    self.memory_complexity())
         else:
-            self._time_complexity = self._compute_tilde_o_time_complexity(
+            temp_time_complexity = self._compute_tilde_o_time_complexity(
                 params)
 
-        return self._time_complexity
+        if kwargs == {}:
+            self._time_complexity = temp_time_complexity
+        return temp_time_complexity
 
     def memory_complexity(self, **kwargs):
         """
@@ -385,6 +449,7 @@ class BaseAlgorithm:
         INPUT:
 
         - ``optimal_parameters`` -- if for each optimal parameter of the algorithm a value is provided the computation is done based on those parameters
+
         """
 
         if kwargs == {}:
@@ -392,24 +457,25 @@ class BaseAlgorithm:
                 return self._memory_complexity
             else:
                 params = self.optimal_parameters()
+                if not self._do_valid_parameters_in_current_ranges_exist():
+                    self._time_complexity = inf
+                    self._memory_complexity = inf
+                    return inf
+
         else:
             params = self.__set_dict(**kwargs)
 
-        if not self._do_valid_parameters_in_current_ranges_exist():
-            self._time_complexity = inf
-            self._memory_complexity = inf
-            return inf
-
         if self._complexity_type == ComplexityType.ESTIMATE.value:
-            self._memory_complexity = self._compute_memory_complexity(params)
+            temp_memory_complexity = self._compute_memory_complexity(params)
             if self.bit_complexities:
-                self._memory_complexity = self.problem.to_bitcomplexity_memory(
-                    self._memory_complexity)
+                temp_memory_complexity = self.problem.to_bitcomplexity_memory(
+                    temp_memory_complexity)
         else:
-            self._memory_complexity = self._compute_tilde_o_memory_complexity(
+            temp_memory_complexity = self._compute_tilde_o_memory_complexity(
                 params)
-
-        return self._memory_complexity
+        if kwargs == {}:
+            self._memory_complexity = temp_memory_complexity
+        return temp_memory_complexity
 
     def optimal_parameters(self):
         """

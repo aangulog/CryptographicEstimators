@@ -26,15 +26,13 @@ class BaseProblem(object):
     INPUT:
 
     - ``parameters`` -- dict of parameters of the problem.
-    - ``base_field`` -- characteristic of the base field
     - ``nsolutions`` -- number of solutions of the problem
-    - ``memory_bound`` -- maximum allowed memory to use for solving the problem
+    - ``memory_bound`` -- maximum allowed memory to use for solving the problem (default: inf)
 
     """
 
     def __init__(self, **kwargs):
         self.parameters = {}
-        self.base_field = None
         self.nsolutions = None
         self.memory_bound = inf if "memory_bound" not in kwargs else kwargs["memory_bound"]
 

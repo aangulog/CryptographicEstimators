@@ -20,7 +20,6 @@ from ...base_algorithm import optimal_parameter
 from ...SDEstimator.sd_algorithm import SDAlgorithm
 from ...SDEstimator.sd_problem import SDProblem
 from ...SDEstimator.sd_helper import _gaussian_elimination_complexity, _mem_matrix, _list_merge_complexity, binom, log2, min_max, inf
-from ...helper import memory_access_cost
 from types import SimpleNamespace
 from ..sd_constants import *
 from ..SDWorkfactorModels.stern import SternScipyModel
@@ -29,7 +28,7 @@ from ..SDWorkfactorModels.stern import SternScipyModel
 class Stern(SDAlgorithm):
     def __init__(self, problem: SDProblem, **kwargs):
         """
-        Construct an instance of Stern's estimator [Ste1988]_, [BLP2008]_.
+        Construct an instance of Stern's estimator [Ste88]_, [BLP08]_.
 
         Expected weight distribution::
 
@@ -113,7 +112,7 @@ class Stern(SDAlgorithm):
         Generator which yields on each call a new set of valid parameters based on the `_parameter_ranges` and already
         set parameters in `_optimal_parameters`
         """
-        new_ranges = self._fix_ranges_for_already_set_parmeters()
+        new_ranges = self._fix_ranges_for_already_set_parameters()
 
         _, k, _ = self.problem.get_parameters()
         k1 = k//2
@@ -138,9 +137,6 @@ class Stern(SDAlgorithm):
         n, k, w = self.problem.get_parameters()
         par = SimpleNamespace(**parameters)
         k1 = k // 2
-
-        if self._are_parameters_invalid(parameters):
-            return inf, inf
 
         memory_bound = self.problem.memory_bound
 
@@ -175,8 +171,6 @@ class Stern(SDAlgorithm):
         Tg = _gaussian_elimination_complexity(n, k, par.r)
         time = Tp + log2(Tg + _list_merge_complexity(L1,
                          par.l, self._hmap) * l_part_iterations)
-
-        time += memory_access_cost(memory, self.memory_access)
 
         if verbose_information is not None:
             verbose_information[VerboseInformation.PERMUTATIONS.value] = Tp

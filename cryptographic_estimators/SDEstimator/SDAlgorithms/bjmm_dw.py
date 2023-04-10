@@ -21,7 +21,6 @@ from ...SDEstimator.sd_algorithm import SDAlgorithm
 from ...SDEstimator.sd_problem import SDProblem
 from ...SDEstimator.sd_helper import _gaussian_elimination_complexity, _mem_matrix, _mitm_nn_complexity, binom, log2, \
     ceil, inf
-from ...helper import memory_access_cost
 from scipy.special import binom as binom_sp
 from scipy.optimize import fsolve
 from warnings import filterwarnings
@@ -34,7 +33,7 @@ class BJMMdw(SDAlgorithm):
     def __init__(self, problem: SDProblem, **kwargs):
         """
         Construct an instance of BJMM's estimator using *d*isjoint *w*eight distributions combined with
-         MitM-nearest neighbor search. [EB2022]_, [MMT2011]_, [BJMM2012]_.
+         MitM-nearest neighbor search. [EB22]_, [MMT11]_, [BJMM12]_.
 
         Expected weight distribution::
 
@@ -70,7 +69,6 @@ class BJMMdw(SDAlgorithm):
         initialize the parameter ranges for p, p1, w1, w11, w2 to start the optimisation 
         process.
         """
-        n, k, w = self.problem.get_parameters()
         self.set_parameter_ranges("p", 0, 25)
         self.set_parameter_ranges("p1", 0, 20)
         self.set_parameter_ranges("w1", 0, 10)
@@ -170,7 +168,7 @@ class BJMMdw(SDAlgorithm):
         set parameters in `_optimal_parameters`
 
         """
-        new_ranges = self._fix_ranges_for_already_set_parmeters()
+        new_ranges = self._fix_ranges_for_already_set_parameters()
         n, k, w  = self.problem.get_parameters()
         for p in range(new_ranges["p"]["min"], min(w // 2, new_ranges["p"]["max"]) + 1, 2):
             for p1 in range(max(new_ranges["p1"]["min"], (p + 1) // 2), new_ranges["p1"]["max"] + 1):
@@ -229,9 +227,6 @@ class BJMMdw(SDAlgorithm):
         n, k, w = self.problem.get_parameters()
         par = SimpleNamespace(**parameters)
 
-        if self._are_parameters_invalid(parameters):
-            return inf, inf
-
         local_time, local_mem = inf, inf
         solutions = self.problem.nsolutions
         memory_bound = self.problem.memory_bound
@@ -284,7 +279,6 @@ class BJMMdw(SDAlgorithm):
                 T_rep = int(ceil(2 ** max(2 * l1 - log2(reps), 0)))
 
                 time = Tp + log2(Tg + T_rep * T_tree)
-                time += memory_access_cost(memory, self.memory_access)
 
                 if time < local_time:
                     local_time = time

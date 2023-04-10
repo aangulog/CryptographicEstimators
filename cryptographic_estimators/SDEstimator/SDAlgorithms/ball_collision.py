@@ -20,7 +20,6 @@ from ...base_algorithm import optimal_parameter
 from ...SDEstimator.sd_algorithm import SDAlgorithm
 from ...SDEstimator.sd_problem import SDProblem
 from ...SDEstimator.sd_helper import _gaussian_elimination_complexity, _mem_matrix, _list_merge_complexity, binom, log2, inf, min_max
-from ...helper import memory_access_cost
 from types import SimpleNamespace
 from ..sd_constants import *
 from ..SDWorkfactorModels.ball_collision import BallCollisionScipyModel
@@ -31,15 +30,15 @@ class BallCollision(SDAlgorithm):
         """
         Complexity estimate of the ball collision decoding algorithm
 
-        [BLP11] Bernstein, D.J., Lange, T., Peters, C.:  Smaller decoding exponents: ball-collision decoding.
-        In: Annual Cryptology Conference. pp. 743–760. Springer (2011)
+        Introduced in [BLP11]_.
 
         expected weight distribution::
 
-        +------------------+---------+---------+-------------+-------------+
-        | <-+ n - k - l +->|<- l/2 ->|<- l/2 ->|<--+ k/2 +-->|<--+ k/2 +-->|
-        |    w - 2p - 2pl  |   pl    |   pl    |      p      |      p      |
-        +------------------+---------+---------+-------------+-------------+
+            +------------------+---------+---------+-------------+-------------+
+            | <-+ n - k - l +->|<- l/2 ->|<- l/2 ->|<--+ k/2 +-->|<--+ k/2 +-->|
+            |    w - 2p - 2pl  |   pl    |   pl    |      p      |      p      |
+            +------------------+---------+---------+-------------+-------------+
+
         INPUT:
 
         - ``problem`` -- SDProblem object including all necessary parameters
@@ -56,7 +55,7 @@ class BallCollision(SDAlgorithm):
         n, k, w = self.problem.get_parameters()
 
         self.set_parameter_ranges("p", 0, w // 2)
-
+        self._name="BallCollision"
         s = self.full_domain
         self.set_parameter_ranges("l", 0, min_max(300, n - k, s))
         self.set_parameter_ranges("pl", 0, min_max(10, w, s))
@@ -125,7 +124,7 @@ class BallCollision(SDAlgorithm):
         Generator which yields on each call a new set of valid parameters based on the `_parameter_ranges` and already
         set parameters in `_optimal_parameters`
         """
-        new_ranges = self._fix_ranges_for_already_set_parmeters()    
+        new_ranges = self._fix_ranges_for_already_set_parameters()
         n, k, w = self.problem.get_parameters()
         start_p = new_ranges["p"]["min"]+(new_ranges["p"]["min"] % 2)
         for p in range(start_p, min(w // 2, new_ranges["p"]["max"])+1, 2):
@@ -145,9 +144,6 @@ class BallCollision(SDAlgorithm):
         par = SimpleNamespace(**parameters)
         k1 = k // 2
 
-        if self._are_parameters_invalid(parameters):
-            return inf, inf
-
         memory_bound = self.problem.memory_bound
 
         L1 = binom(k1, par.p)
@@ -163,7 +159,6 @@ class BallCollision(SDAlgorithm):
                  - 2 * log2(binom(k1, par.p)) - 2 * log2(binom(par.l // 2, par.pl)) - solutions, 0)
         Tg = _gaussian_elimination_complexity(n, k, par.r)
         time = Tp + log2(Tg + _list_merge_complexity(L1, par.l, self._hmap))
-        time += memory_access_cost(memory, self.memory_access)
 
         if verbose_information is not None:
             verbose_information[VerboseInformation.PERMUTATIONS.value] = Tp

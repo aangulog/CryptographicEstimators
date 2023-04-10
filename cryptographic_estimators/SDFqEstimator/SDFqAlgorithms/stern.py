@@ -1,3 +1,20 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
+
 from ...base_algorithm import optimal_parameter
 from ...SDFqEstimator.sdfq_algorithm import SDFqAlgorithm
 from ...SDFqEstimator.sdfq_problem import SDFqProblem
@@ -10,23 +27,21 @@ from ..sdfq_constants import *
 class Stern(SDFqAlgorithm):
     def __init__(self, problem: SDFqProblem, **kwargs):
         """
-        Construct an instance of Stern's estimator [Ste1988]_, [BLP2008]_.  TODO [Peters]
+        Construct an instance of Stern's estimator [Pet11]_, [Ste88]_, [BLP08]_.
+
         Expected weight distribution::
+
             +-------------------------+---------+-------------+-------------+
             | <----+ n - k - l +----> |<-- l -->|<--+ k/2 +-->|<--+ k/2 +-->|
             |          w - 2p         |    0    |      p      |      p      |
             +-------------------------+---------+-------------+-------------+
 
         INPUT:
+
         - ``problem`` -- SDProblem object including all necessary parameters
 
-        TEST::
-            sage: from cryptographic_estimators.SDFqEstimator.SDFqAlgorithms import Stern
-            sage: from cryptographic_estimators.SDFqEstimator import SDFqProblem
-            sage: Stern(SDFqProblem(n=961,k=771,w=48,q=31)).time_complexity()
-            129.05902980703917
-
         EXAMPLES::
+
             sage: from cryptographic_estimators.SDFqEstimator.SDFqAlgorithms import Stern
             sage: from cryptographic_estimators.SDFqEstimator import SDFqProblem
             sage: Stern(SDFqProblem(n=100,k=50,w=10,q=3))
@@ -35,17 +50,9 @@ class Stern(SDFqAlgorithm):
         """
         self._name = "Stern"
         super(Stern, self).__init__(problem, **kwargs)
-        self.initialize_parameter_ranges()
-
-    def initialize_parameter_ranges(self):
-        """
-        Initialize the parameter ranges for p, l to start the optimisation
-        process.
-        """
         n, k, w, _ = self.problem.get_parameters()
-        s = self.full_domain
-        self.set_parameter_ranges("p", 0, min_max(w // 2, 30, s))
-        self.set_parameter_ranges("l", 0, min_max(n - k, 400, s))
+        self.set_parameter_ranges("p", 0, max(w // 2, 1))
+        self.set_parameter_ranges("l", 0, n-k)
 
     @optimal_parameter
     def l(self):
@@ -53,6 +60,7 @@ class Stern(SDFqAlgorithm):
         Return the optimal parameter $l$ used in the algorithm optimization
 
         EXAMPLES::
+
             sage: from cryptographic_estimators.SDFqEstimator.SDFqAlgorithms import Stern
             sage: from cryptographic_estimators.SDFqEstimator import SDFqProblem
             sage: A = Stern(SDFqProblem(n=100,k=50,w=10,q=3))
@@ -69,6 +77,7 @@ class Stern(SDFqAlgorithm):
         Return the optimal parameter $p$ used in the algorithm optimization
 
         EXAMPLES::
+
             sage: from cryptographic_estimators.SDFqEstimator.SDFqAlgorithms import Stern
             sage: from cryptographic_estimators.SDFqEstimator import SDFqProblem
             sage: A = Stern(SDFqProblem(n=100,k=50,w=10,q=3))
@@ -95,7 +104,7 @@ class Stern(SDFqAlgorithm):
         Generator which yields on each call a new set of valid parameters based on the `_parameter_ranges` and already
         set parameters in `_optimal_parameters`
         """
-        new_ranges = self._fix_ranges_for_already_set_parmeters()
+        new_ranges = self._fix_ranges_for_already_set_parameters()
 
         _, k, _, q = self.problem.get_parameters()
         k1 = k//2
@@ -125,9 +134,6 @@ class Stern(SDFqAlgorithm):
         n, k, w, q = self.problem.get_parameters()
         par = SimpleNamespace(**parameters)
         k1 = k // 2
-
-        if self._are_parameters_invalid(parameters):
-            return inf, inf
 
         memory_bound = self.problem.memory_bound
 

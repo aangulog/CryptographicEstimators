@@ -21,7 +21,6 @@ from ...SDEstimator.sd_algorithm import SDAlgorithm
 from ...SDEstimator.sd_problem import SDProblem
 from ...SDEstimator.sd_helper import _gaussian_elimination_complexity, _mem_matrix, _indyk_motwani_complexity, binom, \
     log2, inf, ceil
-from ...helper import memory_access_cost
 from types import SimpleNamespace
 from ..sd_constants import *
 from ..SDWorkfactorModels import BothMayScipyModel
@@ -32,10 +31,8 @@ class BothMay(SDAlgorithm):
         """
         Complexity estimate of Both-May algorithm in depth 2 using Indyk-Motwani and / or MitM for NN search
 
-        [BotMay18] Both, L., May, A.: Decoding linear codes with high error rate and its impact for LPN security. In:
-        International Conference on Post-Quantum Cryptography. pp. 25--46. Springer (2018)
 
-        expected weight distribution::
+        For further reference see [BM18]_.
 
             +-------------------+---------+-------------------+-------------------+
             | <--+ n - k - l+-->|<-+ l +->|<----+ k / 2 +---->|<----+ k / 2 +---->|
@@ -165,7 +162,7 @@ class BothMay(SDAlgorithm):
         set parameters in `_optimal_parameters`
 
         """
-        new_ranges = self._fix_ranges_for_already_set_parmeters()
+        new_ranges = self._fix_ranges_for_already_set_parameters()
         n, k, w = self.problem.get_parameters()
 
         for p in range(new_ranges["p"]["min"], min(w // 2, new_ranges["p"]["max"])+1, 2):
@@ -186,9 +183,6 @@ class BothMay(SDAlgorithm):
         n, k, w = self.problem.get_parameters()
         par = SimpleNamespace(**parameters)
         k1 = k // 2
-
-        if self._are_parameters_invalid(parameters):
-            return inf, inf
 
         solutions = self.problem.nsolutions
         memory_bound = self.problem.memory_bound
@@ -220,7 +214,6 @@ class BothMay(SDAlgorithm):
         T_rep = int(ceil(2 ** max(0, par.l - log2(reps))))
 
         time = Tp + log2(Tg + T_rep * T_tree)
-        time += memory_access_cost(memory, self.memory_access)
         if verbose_information is not None:
             verbose_information[VerboseInformation.CONSTRAINTS.value] = [par.l]
             verbose_information[VerboseInformation.PERMUTATIONS.value] = Tp

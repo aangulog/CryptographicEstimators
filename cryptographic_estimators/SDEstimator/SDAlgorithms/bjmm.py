@@ -22,7 +22,6 @@ from ...SDEstimator.sd_algorithm import SDAlgorithm
 from ...SDEstimator.sd_problem import SDProblem
 from ...SDEstimator.sd_helper import _gaussian_elimination_complexity, _mem_matrix, _list_merge_complexity, min_max, \
     binom, log2, ceil, inf
-from ...helper import memory_access_cost
 from types import SimpleNamespace
 from ..sd_constants import *
 from ..SDWorkfactorModels.bjmm import BJMMScipyModel
@@ -34,12 +33,7 @@ class BJMM(SDAlgorithm):
         """
         Complexity estimate of BJMM algorithm in depth 2,3
 
-        [MMT11] May, A., Meurer, A., Thomae, E.: Decoding random linear codes in  2^(0.054n). In: International Conference
-        on the Theory and Application of Cryptology and Information Security. pp. 107–124. Springer (2011)
-
-        [BJMM12] Becker, A., Joux, A., May, A., Meurer, A.: Decoding random binary linear codes in 2^(n/20): How 1+ 1= 0
-        improves information set decoding. In: Annual international conference on the theory and applications of
-        cryptographic techniques. pp. 520–536. Springer (2012)
+        The algorithm was introduced in [BJMM12]_  as an extension of [MMT11]_.
 
         expected weight distribution::
 
@@ -158,7 +152,7 @@ class BJMM(SDAlgorithm):
         """ 
         returns the optimal time and memory complexity for BJMM d3
         """
-        # return self.BJMM_depth_3._tilde_o_time_and_memory_complexity(self.BJMM_depth_3.optimal_parameters())
+
         return self.BJMM_depth_3._tilde_o_time_and_memory_complexity(parameters)
 
     def get_optimal_parameters_dict(self):
@@ -186,12 +180,7 @@ class BJMMd2(SDAlgorithm):
         """
         Complexity estimate of BJMM algorithm in depth 2
 
-        [MMT11] May, A., Meurer, A., Thomae, E.: Decoding random linear codes in  2^(0.054n). In: International Conference
-        on the Theory and Application of Cryptology and Information Security. pp. 107–124. Springer (2011)
-
-        [BJMM12] Becker, A., Joux, A., May, A., Meurer, A.: Decoding random binary linear codes in 2^(n/20): How 1+ 1= 0
-        improves information set decoding. In: Annual international conference on the theory and applications of
-        cryptographic techniques. pp. 520–536. Springer (2012)
+        The algorithm was introduced in [BJMM12]_  as an extension of [MMT11]_.
 
         expected weight distribution::
 
@@ -293,7 +282,7 @@ class BJMMd2(SDAlgorithm):
         Generator which yields on each call a new set of valid parameters based on the `_parameter_ranges` and already
         set parameters in `_optimal_parameters`
         """
-        new_ranges = self._fix_ranges_for_already_set_parmeters()
+        new_ranges = self._fix_ranges_for_already_set_parameters()
 
         n, k, w = self.problem.get_parameters()
 
@@ -314,9 +303,6 @@ class BJMMd2(SDAlgorithm):
         n, k, w = self.problem.get_parameters()
         par = SimpleNamespace(**parameters)
         k1 = (k + par.l) // 2
-
-        if self._are_parameters_invalid(parameters):
-            return inf, inf
 
         solutions = self.problem.nsolutions
         memory_bound = self.problem.memory_bound
@@ -348,7 +334,6 @@ class BJMMd2(SDAlgorithm):
         T_rep = int(ceil(2 ** (l1 - log2(reps))))
 
         time = Tp + log2(Tg + T_rep * T_tree)
-        time += memory_access_cost(memory, self.memory_access)
 
         if verbose_information is not None:
             verbose_information[VerboseInformation.CONSTRAINTS.value] = [
@@ -375,12 +360,7 @@ class BJMMd3(SDAlgorithm):
         """
         Complexity estimate of BJMM algorithm in depth 2
 
-        [MMT11] May, A., Meurer, A., Thomae, E.: Decoding random linear codes in  2^(0.054n). In: International Conference
-        on the Theory and Application of Cryptology and Information Security. pp. 107–124. Springer (2011)
-
-        [BJMM12] Becker, A., Joux, A., May, A., Meurer, A.: Decoding random binary linear codes in 2^(n/20): How 1+ 1= 0
-        improves information set decoding. In: Annual international conference on the theory and applications of
-        cryptographic techniques. pp. 520–536. Springer (2012)
+        The algorithm was introduced in [BJMM12]_  as an extension of [MMT11]_.
 
         expected weight distribution::
 
@@ -388,6 +368,7 @@ class BJMMd3(SDAlgorithm):
             | <-----+ n - k - l +----->|<--+ (k + l)/2 +-->|<--+ (k + l)/2 +-->|
             |           w - 2p         |        p          |        p          |
             +--------------------------+-------------------+-------------------+
+
         INPUT:
 
         - ``problem`` -- SDProblem object including all necessary parameters
@@ -499,7 +480,7 @@ class BJMMd3(SDAlgorithm):
         set parameters in `_optimal_parameters`
 
         """
-        new_ranges = self._fix_ranges_for_already_set_parmeters()
+        new_ranges = self._fix_ranges_for_already_set_parameters()
         n, k, w = self.problem.get_parameters()
 
         for p in range(new_ranges["p"]["min"], min(w // 2, new_ranges["p"]["max"]), 2):
@@ -520,9 +501,6 @@ class BJMMd3(SDAlgorithm):
         par = SimpleNamespace(**parameters)
 
         k1 = (k + par.l) // 2
-
-        if self._are_parameters_invalid(parameters):
-            return inf, inf
 
         solutions = self.problem.nsolutions
         memory_bound = self.problem.memory_bound
@@ -555,7 +533,6 @@ class BJMMd3(SDAlgorithm):
             ceil(2 ** (3 * max(0, l1 - log2(reps1)) + max(0, l2 - log2(reps2)))))
 
         time = Tp + log2(Tg + T_rep * T_tree)
-        time += memory_access_cost(memory, self.memory_access)
 
         if verbose_information is not None:
             verbose_information[VerboseInformation.CONSTRAINTS.value] = [

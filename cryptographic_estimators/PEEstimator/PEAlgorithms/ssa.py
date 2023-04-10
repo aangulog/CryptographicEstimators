@@ -1,3 +1,20 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
+
 from ...PEEstimator.pe_algorithm import PEAlgorithm
 from ...PEEstimator.pe_problem import PEProblem
 from math import log, log2
@@ -32,19 +49,7 @@ class SSA(PEAlgorithm):
 
     def _compute_memory_complexity(self, parameters: dict):
         n, k, q, h = self.problem.get_parameters()
-
-        return log2(n*h+n*k+n*(n-k))
-
-    def _time_and_memory_complexity(self, parameters: dict, verbose_information=None):
-        """
-
-        INPUT:
-        -  ``parameters`` -- dictionary including parameters
-        -  ``verbose_information`` -- unused
-
-        """
-        return self._compute_time_complexity(parameters), \
-               self._compute_memory_complexity(parameters)
+        return log2(n * h + n * k + n * (n - k))
 
     def __repr__(self):
         rep = "Support Splitting Algorithm estimator for " + str(self.problem)

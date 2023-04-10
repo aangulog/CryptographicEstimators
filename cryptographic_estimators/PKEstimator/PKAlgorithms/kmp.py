@@ -1,3 +1,20 @@
+# ****************************************************************************
+# Copyright 2023 Technology Innovation Institute
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# ****************************************************************************
+
 from ..pk_algorithm import PKAlgorithm
 from ..pk_problem import PKProblem
 from ..pk_constants import *
@@ -68,30 +85,16 @@ class KMP(PKAlgorithm):
         memory = log2(L1 + L2) + log2(self.memory_for_list_element)
 
         if verbose_information is not None:
-            verbose_information[VerboseInformation.KMP_L1] = L1
-            verbose_information[VerboseInformation.KMP_L2] = L2
-            verbose_information[VerboseInformation.KMP_FINAL_LIST] = num_coll
+            verbose_information[VerboseInformation.KMP_L1.value] = log2(L1)
+            verbose_information[VerboseInformation.KMP_L2.value] = log2(L2)
+            verbose_information[VerboseInformation.KMP_FINAL_LIST.value] = log2(num_coll)
 
         return time, memory
 
     def _compute_time_complexity(self, parameters: dict):
-        """
-
-        INPUT:
-
-        -  ``parameters`` -- dictionary including parameters
-
-        """
         return self._compute_time_and_memory(parameters)[0]
 
     def _compute_memory_complexity(self, parameters: dict):
-        """
-
-        INPUT:
-
-        -  ``parameters`` -- dictionary including parameters
-
-        """
         return self._compute_time_and_memory(parameters)[1]
 
     def _get_verbose_information(self):
