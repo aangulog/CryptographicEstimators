@@ -264,11 +264,11 @@ class BaseEstimator(object):
                 logger(
                     f"[{str(index + 1)}/{str(self.nalgorithms())}] - Processing algorithm: '{name}'")
 
-            # if self.include_tildeo and BASE_TILDEO_ESTIMATE not in self.estimates[name]:
-            #     self._add_tilde_o_complexity(algorithm)
+            if self.include_tildeo and BASE_TILDEO_ESTIMATE not in self.estimates[name]:
+                self._add_tilde_o_complexity(algorithm)
 
-            # if self.include_quantum and BASE_QUANTUMO not in self.estimates[name]:
-            #     self._add_quantum_complexity(algorithm)
+            if self.include_quantum and BASE_QUANTUMO not in self.estimates[name]:
+                self._add_quantum_complexity(algorithm)
 
             if BASE_ESTIMATEO not in self.estimates[name]:
                 self._add_estimate(algorithm)
@@ -350,6 +350,13 @@ class BaseEstimator(object):
 
                 if BASE_ESTIMATEO not in self.estimates[name]:
                     executor.submit(self._add_estimate, algorithm)
+
+                if self.include_tildeo and BASE_TILDEO_ESTIMATE not in self.estimates[name]:
+                    executor.submit(self._add_tilde_o_complexity, algorithm)
+
+                if self.include_quantum and BASE_QUANTUMO not in self.estimates[name]:
+                    executor.submit(self._add_quantum_complexity, algorithm)
+
         end_time = time.time()
         print(f"Total time: {end_time - start_time}")
         return self.estimates
@@ -379,6 +386,16 @@ class BaseEstimator(object):
                 if BASE_ESTIMATEO not in shared_estimates[name]:
                     future = executor.submit(
                         self.shared_add_estimate, algorithm, shared_estimates)
+                    futurelist.append(future)
+
+                if self.include_tildeo and BASE_TILDEO_ESTIMATE not in shared_estimates[name]:
+                    future = executor.submit(
+                        self.shared_add_tilde_o_complexity, algorithm, shared_estimates)
+                    futurelist.append(future)
+
+                if self.include_quantum and BASE_QUANTUMO not in shared_estimates[name]:
+                    future = executor.submit(
+                        self.shared_add_quantum_complexity, algorithm, shared_estimates)
                     futurelist.append(future)
 
             # Wait for all futures to complete
@@ -421,4 +438,62 @@ class BaseEstimator(object):
                 BASE_PARAMETERS: optimal_parameters
             },
             BASE_ADDITIONALO: verbose_information
+        }
+
+    def shared_add_tilde_o_complexity(self, algorithm: BaseAlgorithm, shared_dict: DictProxy):
+        """
+        runs the tilde O complexity analysis for the given `algorithm`
+
+        INPUT:
+
+        - ``algorithm`` -- Algorithm to run.
+
+        """
+        print("Running tilde O complexity analysis")
+        name = algorithm.__class__.__name__
+        algorithm.complexity_type = ComplexityType.TILDEO.value
+
+        try:
+            time_complexity_value = algorithm.time_complexity()
+        except NotImplementedError:
+            time_complexity_value = "--"
+        try:
+            memory_complexity_value = algorithm.memory_complexity()
+        except NotImplementedError:
+            memory_complexity_value = "--"
+        try:
+            optimal_parameters = algorithm.get_optimal_parameters_dict()
+        except NotImplementedError:
+            optimal_parameters = "--"
+
+        shared_dict[name] = {
+            **shared_dict[name],
+            BASE_TILDEO_ESTIMATE: {
+                BASE_TIME: time_complexity_value,
+                BASE_MEMORY: memory_complexity_value,
+                BASE_PARAMETERS: optimal_parameters
+            }
+        }
+
+    def shared_add_quantum_complexity(self, algorithm: BaseAlgorithm, shared_dict: DictProxy):
+        """
+        runs the quantum time analysis for the given `algorithm`
+
+        INPUT:
+
+        - ``algorithm`` -- Algorithm to run.
+
+        """
+        print("Running quantum time complexity analysis")
+        name = algorithm.__class__.__name__
+        try:
+            time_complexity_value = algorithm.quantum_time_complexity()
+        except NotImplementedError:
+            time_complexity_value = "--"
+
+        shared_dict[name] = {
+            **shared_dict[name],
+            BASE_QUANTUMO: {
+                BASE_TIME: time_complexity_value,
+            }
         }
