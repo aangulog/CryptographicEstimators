@@ -16,6 +16,10 @@
 # ****************************************************************************
 
 
+from concurrent import futures
+import time
+from multiprocessing import Manager
+from multiprocessing.managers import DictProxy
 from math import isinf
 from typing import Union, Callable
 from .helper import ComplexityType
@@ -242,6 +246,7 @@ class BaseEstimator(object):
 
         """
         logger = kwargs.get("logger", None)
+        start_time = time.time()
 
         if not self.estimates:
             self.estimates = dict()
@@ -256,15 +261,17 @@ class BaseEstimator(object):
                 logger(
                     f"[{str(index + 1)}/{str(self.nalgorithms())}] - Processing algorithm: '{name}'")
 
-            if self.include_tildeo and BASE_TILDEO_ESTIMATE not in self.estimates[name]:
-                self._add_tilde_o_complexity(algorithm)
+            # if self.include_tildeo and BASE_TILDEO_ESTIMATE not in self.estimates[name]:
+            #     self._add_tilde_o_complexity(algorithm)
 
-            if self.include_quantum and BASE_QUANTUMO not in self.estimates[name]:
-                self._add_quantum_complexity(algorithm)
+            # if self.include_quantum and BASE_QUANTUMO not in self.estimates[name]:
+            #     self._add_quantum_complexity(algorithm)
 
             if BASE_ESTIMATEO not in self.estimates[name]:
                 self._add_estimate(algorithm)
 
+        end_time = time.time()
+        print(f"Total time: {end_time - start_time}")
         return self.estimates
 
     def table(self, show_quantum_complexity=False, show_tilde_o_time=False, show_all_parameters=False, precision=1, truncate=False):
@@ -319,3 +326,27 @@ class BaseEstimator(object):
         self.estimates = {}
         for i in self.algorithms():
             i.reset()
+
+    def multithread_estimate(self, **kwargs):
+        """
+        Returns dictionary describing the complexity of each algorithm and its optimal parameters
+
+        """
+        start_time = time.time()
+        if not self.estimates:
+            self.estimates = dict()
+
+        with futures.ThreadPoolExecutor() as executor:
+            for index, algorithm in enumerate(self.algorithms()):
+                name = algorithm.__class__.__name__
+                if name not in self.estimates:
+                    self.estimates[name] = {}
+
+                print(
+                    f"[{str(index + 1)}/{str(self.nalgorithms())}] - Processing algorithm: '{name}'")
+
+                if BASE_ESTIMATEO not in self.estimates[name]:
+                    executor.submit(self._add_estimate, algorithm)
+        end_time = time.time()
+        print(f"Total time: {end_time - start_time}")
+        return self.estimates
