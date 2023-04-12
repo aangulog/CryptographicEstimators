@@ -1,10 +1,10 @@
-name: Build
+name: sonar-analysis
 on:
   push:
     branches:
-      - feat/sonar-qube # or the name of your main branch
-  pull_request:
-    types: [opened, synchronize, reopened]
+      - feat/sonar-analysis # or the name of your main branch
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
 jobs:
   build:
     name: Build
