@@ -1,11 +1,5 @@
 # CryptographicEstimators
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Crypto-TII_CryptographicEstimators&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Crypto-TII_CryptographicEstimators)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Crypto-TII_CryptographicEstimators&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Crypto-TII_CryptographicEstimators)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Crypto-TII_CryptographicEstimators&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Crypto-TII_CryptographicEstimators)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Crypto-TII_CryptographicEstimators&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Crypto-TII_CryptographicEstimators)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Crypto-TII_CryptographicEstimators&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Crypto-TII_CryptographicEstimators)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Crypto-TII_CryptographicEstimators&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Crypto-TII_CryptographicEstimators)
 
 ## Introduction 🎉
 
@@ -65,8 +59,7 @@ To generate the documentation locally you can run `make doc` and then open to `/
 
 ---
 ## Contributing 🖊️
-The aim of this project is to be maintained by the community. We want you to help us grow this library, so please feel free to submit your pull request following the [CONTRIBUTING.md](./docs/CONTRIBUTING.md) document. Also if you need any help about how to edit the `input_dictionary.json` visit [this playground](https://github.com/Crypto-TII/cryptographic_estimators_ui).
- 
+The aim of this project is to be maintained by the community. We want you to help us grow this library, so please feel free to submit your pull request following the [CONTRIBUTING.md](./docs/CONTRIBUTING.md) document. 
 ---
 
 <!--### Usage -->

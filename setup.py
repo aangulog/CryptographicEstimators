@@ -53,7 +53,7 @@ packages = find_packages()
 setup(
     name="cryptographic_estimators",
     version="1.0.1",
-    author="TII",
+    author="",
     description="This library provides bit security estimators and asymptotic complexity estimators for cyrptographic problems. So far it covers the binary Syndrome Decoding Problem (SDEstimator) and the Multivaritate Quadratic Problem (MQEstimator).",
     packages=packages,
     package_dir={package_name: package_name},

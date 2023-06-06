@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Cryptographic Estimators'
-copyright = '2022, TII'
-author = 'TII'
+copyright = '2022'
+author = ':with'
 
 
 # -- General configuration ---------------------------------------------------
@@ -53,7 +53,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'furo'
-html_logo = '../images/tii_logo.png'
+html_logo = '../images/_.png'
 html_favicon = '../images/favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,

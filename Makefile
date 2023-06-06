@@ -32,7 +32,7 @@ clean-docs:
 	@rm -rf docs/build docs/source docs/make.bat docs/Makefile
 
 create-sphinx-config:
-	@sphinx-quickstart -q --sep -p TII-Estimators -a TII -l en --ext-autodoc docs
+	@sphinx-quickstart -q --sep -p Estimators -a anon -l en --ext-autodoc docs
 
 create-rst-files:
 	@python3 scripts/create_documentation.py
