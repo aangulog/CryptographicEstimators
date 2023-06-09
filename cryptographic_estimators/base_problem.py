@@ -1,0 +1,48 @@
+from math import inf
+
+
+class BaseProblem(object):
+    """
+    Construct an instance of BaseProblem
+
+    INPUT:
+
+    - ``parameters`` -- dict of parameters of the problem.
+    - ``nsolutions`` -- number of solutions of the problem
+    - ``memory_bound`` -- maximum allowed memory to use for solving the problem (default: inf)
+
+    """
+
+    def __init__(self, **kwargs):
+        self.parameters = {}
+        self.nsolutions = None
+        self.memory_bound = inf if "memory_bound" not in kwargs else kwargs["memory_bound"]
+
+    def expected_number_solutions(self):
+        """
+        Returns the expected number of existing solutions to the problem
+
+        """
+        return NotImplementedError
+
+    def to_bitcomplexity_time(self, basic_operations: float):
+        """
+        Returns the bit-complexity associated to a given number of basic-operations
+
+        INPUT:
+
+        - ``basic_operations`` -- number of basic operations (logarithmic)
+
+        """
+        return NotImplementedError
+
+    def to_bitcomplexity_memory(self, elements_to_store: float):
+        """
+        Returns the memory bit-complexity associated to a given number of elements to store
+
+        INPUT:
+
+        - ``elements_to_store`` -- number of memory elements (logarithmic)
+
+        """
+        return NotImplementedErr
